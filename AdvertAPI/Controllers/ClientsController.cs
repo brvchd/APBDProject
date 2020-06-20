@@ -7,6 +7,7 @@ using AdvertAPI.Exceptions;
 using AdvertAPI.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Routing;
 
 namespace AdvertAPI.Controllers
 {
@@ -27,7 +28,7 @@ namespace AdvertAPI.Controllers
             try
             {
                 var response = _advertService.RegisterUser(request);
-                return CreatedAtAction("Register User", response);
+                return CreatedAtAction("RegisterUser", response);
             }
             catch (UserExistsException ex)
             {
@@ -57,5 +58,21 @@ namespace AdvertAPI.Controllers
                 return BadRequest(ex1.Message);
             }
         }
+
+        [HttpPost]
+        [Route("/login")]
+        public IActionResult Login(LoginRequest request)
+        {
+            try
+            {
+                var response = _advertService.Login(request);
+                return Ok(response);
+            }
+            catch (UserNotFound ex)
+            {
+                return NotFound(ex.Message);
+            }
+        }
+            
     }
 }

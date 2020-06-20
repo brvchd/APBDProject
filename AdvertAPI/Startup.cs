@@ -28,7 +28,6 @@ namespace AdvertAPI
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddScoped<IAdvertService, AdvertService>();
@@ -45,14 +44,13 @@ namespace AdvertAPI
                             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["SecretKey"]))
                         };
                     });
-            services.AddDbContext<masterContext>(options =>
+            services.AddDbContext<AdvertAPIContext>(options =>
             {
-                options.UseSqlServer("Data Source=DESKTOP-6AU3DLB;Initial Catalog=master;Integrated Security=True");
+                options.UseSqlServer("Data Source=DESKTOP-6AU3DLB;Initial Catalog=AdvertAPI;Integrated Security=True");
             });
             services.AddControllers();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())

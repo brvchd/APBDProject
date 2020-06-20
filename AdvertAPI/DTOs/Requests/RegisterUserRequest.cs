@@ -14,7 +14,7 @@ namespace AdvertAPI.DTOs.Requests
         public string LastName { get; set; }
         [Required(ErrorMessage = "Provide your email name.")]
         public string Email { get; set; }
-        [RegularExpression(@"^d{3}-\d{3}-\d{3}$")]
+        [RegularExpression(@"^(1-)?\d{3}-\d{3}-\d{3}$")]
         public string Phone { get; set; }
         [Required(ErrorMessage = "Provide your login.")]
         public string Login { get; set; }

@@ -17,9 +17,9 @@ namespace AdvertAPI.Services
 {
     public class AdvertService : IAdvertService
     {
-        private readonly masterContext _context;
+        private readonly AdvertAPIContext _context;
         private readonly IConfiguration _configuration;
-        public AdvertService(masterContext context, IConfiguration configuration)
+        public AdvertService(AdvertAPIContext context, IConfiguration configuration)
         {
             _context = context;
             _configuration = configuration;
@@ -33,19 +33,18 @@ namespace AdvertAPI.Services
 
             var salt = SaltGenerator.GenerateSalt();
             var hashedPass = HashPassword.HashPass(request.Password, salt);
-            var requestId = GenerateId();
 
             var client = new Client()
             {
-                IdClient = requestId,
                 FirstName = request.FirstName,
                 LastName = request.LastName,
                 Email = request.Email,
+                Phone = request.Phone,
                 Login = request.Login,
                 Password = hashedPass,
                 Salt = salt
             };
-            
+
             var userclaim = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, Convert.ToString(client.IdClient)),
@@ -70,7 +69,7 @@ namespace AdvertAPI.Services
             _context.Client.Add(client);
             _context.SaveChanges();
 
-            return new RegisterUserResponse { AccessToken = new JwtSecurityTokenHandler().WriteToken(token), RefreshToken = client.RefreshToken  };
+            return new RegisterUserResponse() { AccessToken = new JwtSecurityTokenHandler().WriteToken(token), RefreshToken = client.RefreshToken };
         }
 
 
@@ -94,27 +93,81 @@ namespace AdvertAPI.Services
                 issuer: "AdCompany",
                 audience: "Client",
                 claims: userclaim,
-                expires: DateTime.Now.AddMinutes(5),
+                expires: DateTime.Now.AddMinutes(1),
                 signingCredentials: creds
                 );
 
             client.RefreshToken = Guid.NewGuid().ToString();
             client.ExpireDate = DateTime.Now.AddDays(1);
 
-            _context.Client.Add(client);
             _context.SaveChanges();
 
             return new RefreshTokenResponse() { AccessToken = new JwtSecurityTokenHandler().WriteToken(token), RefreshToken = client.RefreshToken };
 
         }
 
-
-
-
-        private int GenerateId()
+        public LoginResponse Login(LoginRequest request)
         {
-            return _context.Client.Max(p => p.IdClient) + 1;
+            var client = _context.Client.FirstOrDefault(p => p.Login == request.Login);
+            if (client == null) throw new UserNotFound();
+
+            var passwordToCompare = HashPassword.HashPass(request.Password, client.Salt);
+            if (!passwordToCompare.Equals(client.Password)) throw new UserNotFound();
+
+            var userclaim = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, client.IdClient.ToString()),
+                new Claim(ClaimTypes.Name, client.FirstName),
+                new Claim(ClaimTypes.Role, "Client"),
+            };
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["SecretKey"]));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: "AdCompany",
+                audience: "Client",
+                claims: userclaim,
+                expires: DateTime.Now.AddMinutes(1),
+                signingCredentials: creds
+                );
+
+            client.RefreshToken = Guid.NewGuid().ToString();
+            client.ExpireDate = DateTime.Now.AddDays(1);
+            _context.SaveChanges();
+
+            return new LoginResponse() { AccessToken = new JwtSecurityTokenHandler().WriteToken(token), RefreshToken = client.RefreshToken };
         }
+
+        public List<GetCampaignsResponse> GetCampains()
+        {
+            var campaigns = _context.Campaign.Join(_context.Client, c => c.IdClient, cl => cl.IdClient, (c, cl) => new GetCampaignsResponse()
+            {
+                IdCampaign = c.IdCampaign,
+                Client = new Client()
+                {
+                    FirstName = cl.FirstName,
+                    LastName = cl.LastName,
+                    Email = cl.Email,
+                    Phone = cl.Phone,
+                    Login = cl.Login
+                },
+                Banners = _context.Banner.Where(d => d.IdCampaign == c.IdCampaign).ToList(),
+                StartDate = c.StartDate,
+                EndDate = c.StartDate,
+                PricePerSquareMeter = c.PricePerSquareMeter,
+                FromIdBuilding = c.FromIdBuilding,
+                ToIdBuilding = c.ToIdBuilding
+            }).OrderByDescending(p => p.StartDate).ToList();
+
+            return campaigns;
+      
+        }
+
+
+
+
+
+
         private bool IsValidMail(string email)
         {
             try
@@ -130,3 +183,4 @@ namespace AdvertAPI.Services
 
     }
 }
+

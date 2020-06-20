@@ -4,13 +4,13 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace AdvertAPI.Models
 {
-    public partial class masterContext : DbContext
+    public partial class AdvertAPIContext : DbContext
     {
-        public masterContext()
+        public AdvertAPIContext()
         {
         }
 
-        public masterContext(DbContextOptions<masterContext> options)
+        public AdvertAPIContext(DbContextOptions<AdvertAPIContext> options)
             : base(options)
         {
         }
@@ -28,7 +28,7 @@ namespace AdvertAPI.Models
                 entity.HasKey(e => e.IdAdvertisement)
                     .HasName("Banner_pk");
 
-                entity.Property(e => e.IdAdvertisement).ValueGeneratedNever();
+                entity.Property(e => e.IdAdvertisement).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Area).HasColumnType("decimal(6, 2)");
 
@@ -46,7 +46,7 @@ namespace AdvertAPI.Models
                 entity.HasKey(e => e.IdBuilding)
                     .HasName("Building_pk");
 
-                entity.Property(e => e.IdBuilding).ValueGeneratedNever();
+                entity.Property(e => e.IdBuilding).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.City)
                     .IsRequired()
@@ -64,7 +64,7 @@ namespace AdvertAPI.Models
                 entity.HasKey(e => e.IdCampaign)
                     .HasName("Campaign_pk");
 
-                entity.Property(e => e.IdCampaign).ValueGeneratedNever();
+                entity.Property(e => e.IdCampaign).ValueGeneratedOnAdd();
 
                 entity.Property(e => e.EndDate).HasColumnType("date");
 
@@ -95,8 +95,8 @@ namespace AdvertAPI.Models
             {
                 entity.HasKey(e => e.IdClient)
                     .HasName("Client_pk");
-
-                entity.Property(e => e.IdClient).ValueGeneratedNever();
+                entity.Property(e => e.IdClient)
+                    .ValueGeneratedOnAdd();
 
                 entity.Property(e => e.Email)
                     .IsRequired()
