@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AdvertAPI.DTOs.Requests;
 using AdvertAPI.Exceptions;
 using AdvertAPI.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
@@ -60,7 +61,7 @@ namespace AdvertAPI.Controllers
         }
 
         [HttpPost]
-        [Route("/login")]
+        [Route("login")]
         public IActionResult Login(LoginRequest request)
         {
             try
@@ -72,6 +73,14 @@ namespace AdvertAPI.Controllers
             {
                 return NotFound(ex.Message);
             }
+        }
+        
+        [HttpGet]
+        [Authorize(Roles = "Client")]
+        public IActionResult GetCampaigns()
+        {
+            var response = _advertService.GetCampains();
+            return Ok(response);
         }
             
     }

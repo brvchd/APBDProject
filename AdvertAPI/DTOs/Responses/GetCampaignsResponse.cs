@@ -14,7 +14,7 @@ namespace AdvertAPI.DTOs.Responses
         public decimal PricePerSquareMeter { get; set; }
         public int FromIdBuilding { get; set; }
         public int ToIdBuilding { get; set; }
-        public Client Client { get; set; }
+        public Customer Customer { get; set; }
         public List<Banner> Banners { get; set; }
 
     }

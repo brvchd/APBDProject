@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AdvertAPI.Migrations
 {
     [DbContext(typeof(AdvertAPIContext))]
-    [Migration("20200620163800_Migrations")]
+    [Migration("20200620191828_Migrations")]
     partial class Migrations
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -34,8 +34,8 @@ namespace AdvertAPI.Migrations
                     b.Property<int>("IdCampaign")
                         .HasColumnType("int");
 
-                    b.Property<int>("Name")
-                        .HasColumnType("int");
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(6, 2)");

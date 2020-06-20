@@ -86,7 +86,7 @@ namespace AdvertAPI.Migrations
                 {
                     IdAdvertisement = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<int>(nullable: false),
+                    Name = table.Column<string>(nullable: true),
                     Price = table.Column<decimal>(type: "decimal(6, 2)", nullable: false),
                     IdCampaign = table.Column<int>(nullable: false),
                     Area = table.Column<decimal>(type: "decimal(6, 2)", nullable: false)

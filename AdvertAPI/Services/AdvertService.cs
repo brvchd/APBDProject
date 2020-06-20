@@ -49,7 +49,7 @@ namespace AdvertAPI.Services
             {
                 new Claim(ClaimTypes.NameIdentifier, Convert.ToString(client.IdClient)),
                 new Claim(ClaimTypes.Name, request.FirstName),
-                new Claim(ClaimTypes.Role, "Customer")
+                new Claim(ClaimTypes.Role, "Client")
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["SecretKey"]));
@@ -57,7 +57,7 @@ namespace AdvertAPI.Services
 
             var token = new JwtSecurityToken(
                 issuer: "AdCompany",
-                audience: "Client",
+                audience: "Clients",
                 claims: userclaim,
                 expires: DateTime.Now.AddMinutes(5),
                 signingCredentials: creds
@@ -91,13 +91,11 @@ namespace AdvertAPI.Services
 
             var token = new JwtSecurityToken(
                 issuer: "AdCompany",
-                audience: "Client",
+                audience: "Clients",
                 claims: userclaim,
-                expires: DateTime.Now.AddMinutes(1),
+                expires: DateTime.Now.AddMinutes(5),
                 signingCredentials: creds
                 );
-
-            client.RefreshToken = Guid.NewGuid().ToString();
             client.ExpireDate = DateTime.Now.AddDays(1);
 
             _context.SaveChanges();
@@ -125,9 +123,9 @@ namespace AdvertAPI.Services
 
             var token = new JwtSecurityToken(
                 issuer: "AdCompany",
-                audience: "Client",
+                audience: "Clients",
                 claims: userclaim,
-                expires: DateTime.Now.AddMinutes(1),
+                expires: DateTime.Now.AddMinutes(5),
                 signingCredentials: creds
                 );
 
@@ -143,13 +141,12 @@ namespace AdvertAPI.Services
             var campaigns = _context.Campaign.Join(_context.Client, c => c.IdClient, cl => cl.IdClient, (c, cl) => new GetCampaignsResponse()
             {
                 IdCampaign = c.IdCampaign,
-                Client = new Client()
+                Customer = new Customer()
                 {
                     FirstName = cl.FirstName,
                     LastName = cl.LastName,
                     Email = cl.Email,
-                    Phone = cl.Phone,
-                    Login = cl.Login
+                    Phone = cl.Phone
                 },
                 Banners = _context.Banner.Where(d => d.IdCampaign == c.IdCampaign).ToList(),
                 StartDate = c.StartDate,
@@ -160,12 +157,7 @@ namespace AdvertAPI.Services
             }).OrderByDescending(p => p.StartDate).ToList();
 
             return campaigns;
-      
         }
-
-
-
-
 
 
         private bool IsValidMail(string email)
