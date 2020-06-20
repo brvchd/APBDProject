@@ -96,8 +96,9 @@ namespace AdvertAPI.Services
                 expires: DateTime.Now.AddMinutes(5),
                 signingCredentials: creds
                 );
-            client.ExpireDate = DateTime.Now.AddDays(1);
 
+            client.RefreshToken = Guid.NewGuid().ToString();
+            client.ExpireDate = DateTime.Now.AddDays(1);
             _context.SaveChanges();
 
             return new RefreshTokenResponse() { AccessToken = new JwtSecurityTokenHandler().WriteToken(token), RefreshToken = client.RefreshToken };
