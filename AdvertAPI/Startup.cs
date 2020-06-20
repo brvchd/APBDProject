@@ -30,6 +30,15 @@ namespace AdvertAPI
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSwaggerDocument(config => 
+            {
+                config.PostProcess = document =>
+                {
+                    document.Info.Version = "v1";
+                    document.Info.Title = "Advert API";
+                    document.Info.Description = "A project prepared for \"Database applications\" subject";
+                };
+            });
             services.AddScoped<IAdvertService, AdvertService>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     .AddJwtBearer(options =>
@@ -59,6 +68,10 @@ namespace AdvertAPI
             }
 
             app.UseHttpsRedirection();
+
+            app.UseOpenApi();
+
+            app.UseSwaggerUi3();
 
             app.UseRouting();
 
