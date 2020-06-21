@@ -2,7 +2,9 @@
 using AdvertAPI.DTOs.Responses;
 using AdvertAPI.Exceptions;
 using AdvertAPI.Generator;
+using AdvertAPI.Helpers;
 using AdvertAPI.Models;
+using AdvertAPI.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -19,8 +21,10 @@ namespace AdvertAPI.Services
     {
         private readonly AdvertAPIContext _context;
         private readonly IConfiguration _configuration;
-        public AdvertService(AdvertAPIContext context, IConfiguration configuration)
+        private readonly ICalculateArea _service;
+        public AdvertService(AdvertAPIContext context, ICalculateArea service, IConfiguration configuration)
         {
+            _service = service;
             _context = context;
             _configuration = configuration;
         }
@@ -29,7 +33,7 @@ namespace AdvertAPI.Services
         {
             var checkUser = _context.Client.Any(p => p.Login.Equals(request.Login) || p.Email.Equals(request.Email));
             if (checkUser) throw new UserExistsException();
-            if (!IsValidMail(request.Email)) throw new InvalidMail();
+            if (!MailValidator.IsValidMail(request.Email)) throw new InvalidMail();
 
             var salt = SaltGenerator.GenerateSalt();
             var hashedPass = HashPassword.HashPass(request.Password, salt);
@@ -160,20 +164,83 @@ namespace AdvertAPI.Services
             return campaigns;
         }
 
-
-        private bool IsValidMail(string email)
+        public CreateCampaignResponse CreateCampaign(CreateCampaignRequest request)
         {
-            try
-            {
-                var addr = new System.Net.Mail.MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
-            }
-        }
+            var fromBuilding = _context.Building.FirstOrDefault(p => p.IdBuilding == request.FromIdBuilding);
+            var toBuilding = _context.Building.FirstOrDefault(p => p.IdBuilding == request.ToIdBuilding);
 
+            if (fromBuilding == null || toBuilding == null) throw new CannotFindSuchBuilding();
+            if (!fromBuilding.Street.Equals(toBuilding.Street)) throw new DifferentStreets();
+            if (!fromBuilding.City.Equals(toBuilding.City)) throw new BuildingsInDifferentCities();
+
+            var buildings = _context.Building
+                .Where(p => p.StreetNumber >= fromBuilding.StreetNumber && p.StreetNumber <= toBuilding.StreetNumber)
+                .OrderByDescending(p => p.Height)
+                .ToList();
+            var highest_1 = buildings.First();
+            var highest_2 = buildings.ElementAt(1);
+            var highest_1_Count = buildings.Count(p => p.Height == highest_1.Height);
+
+            var areas = _service.CalculateMinimalArea(highest_1, highest_2, buildings, fromBuilding, toBuilding);
+
+            var bannerPrice_1 = areas.Item1 * request.PricePerSquareMeter;
+            var bannerPrice_2 = areas.Item2 * request.PricePerSquareMeter;
+            var totalPrice = bannerPrice_1 + bannerPrice_2;
+
+            var roundPrice1 = Math.Round(bannerPrice_1, 2);
+            var roundPrice2 = Math.Round(bannerPrice_2, 2);
+            var roundTotal = Math.Round(totalPrice, 2);
+            
+
+            var campaign = new Campaign()
+            {
+                IdClient = request.IdClient,
+                StartDate = request.StartDate,
+                EndDate = request.EndDate,
+                PricePerSquareMeter = request.PricePerSquareMeter,
+                FromIdBuilding = request.FromIdBuilding,
+                ToIdBuilding = request.ToIdBuilding
+            };
+            _context.Campaign.Add(campaign);
+            _context.SaveChanges();
+
+            var banner1 = new Banner()
+            {
+                Name = request.BannerName1,
+                Price = roundPrice1,
+                IdCampaignNavigation = campaign,
+                Area = areas.Item1
+            };
+
+            var banner2 = new Banner()
+            {
+                Name = request.BannerName2,
+                Price = roundPrice2,
+                IdCampaignNavigation = campaign,
+                Area = areas.Item2
+            };
+
+            List<Banner> banners = new List<Banner>();
+            banners.Add(banner1);
+            banners.Add(banner2);
+
+            _context.Banner.Add(banner1);
+            _context.Banner.Add(banner2);
+            _context.SaveChanges(); 
+
+
+            return new CreateCampaignResponse()
+            {
+                IdClient = request.IdClient,
+                StartDate = request.StartDate,
+                EndDate = request.EndDate,
+                PricePerSquareMeter = request.PricePerSquareMeter,
+                FromIdBuilding = request.FromIdBuilding,
+                ToIdBuilding = request.ToIdBuilding,
+                Banners = banners,
+                TotalPrice = roundTotal
+            };
+        }
     }
 }
 

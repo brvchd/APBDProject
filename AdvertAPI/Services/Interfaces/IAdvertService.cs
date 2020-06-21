@@ -10,5 +10,6 @@ namespace AdvertAPI.Services
         public RefreshTokenResponse RefreshToken(string refreshToken);
         public LoginResponse Login(LoginRequest request);
         public List<GetCampaignsResponse> GetCampains();
+        public CreateCampaignResponse CreateCampaign(CreateCampaignRequest request);
     }
 }

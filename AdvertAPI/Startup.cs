@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using AdvertAPI.Models;
 using AdvertAPI.Services;
+using AdvertAPI.Services.Implementation;
+using AdvertAPI.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -30,6 +32,9 @@ namespace AdvertAPI
 
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddControllers().AddNewtonsoftJson(options =>
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+            );
             services.AddSwaggerDocument(config => 
             {
                 config.PostProcess = document =>
@@ -39,6 +44,7 @@ namespace AdvertAPI
                     document.Info.Description = "A project prepared for \"Database applications\" subject";
                 };
             });
+            services.AddScoped<ICalculateArea, CalculateArea>();
             services.AddScoped<IAdvertService, AdvertService>();
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                     .AddJwtBearer(options =>

@@ -82,6 +82,29 @@ namespace AdvertAPI.Controllers
             var response = _advertService.GetCampains();
             return Ok(response);
         }
+
+        [HttpPost]
+        [Route("newcampaign")]
+        public IActionResult CreateCampaign(CreateCampaignRequest request)
+        {
+            try
+            {
+                var response = _advertService.CreateCampaign(request);
+                return CreatedAtAction("CreateCampaign", response);
+            } 
+            catch(CannotFindSuchBuilding ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch(DifferentStreets ex1)
+            {
+                return BadRequest(ex1.Message);
+            }
+            catch(BuildingsInDifferentCities ex2)
+            {
+                return BadRequest(ex2.Message);
+            }
+        }
             
     }
 }

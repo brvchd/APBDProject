@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace AdvertAPI.Models
@@ -11,6 +12,7 @@ namespace AdvertAPI.Models
         public int IdCampaign { get; set; }
         public decimal Area { get; set; }
 
+        [JsonIgnore]
         public virtual Campaign IdCampaignNavigation { get; set; }
     }
 }

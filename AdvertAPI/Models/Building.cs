@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace AdvertAPI.Models
 {
@@ -17,6 +18,7 @@ namespace AdvertAPI.Models
         public string City { get; set; }
         public decimal Height { get; set; }
 
+      
         public virtual ICollection<Campaign> CampaignFromIdBuildingNavigation { get; set; }
         public virtual ICollection<Campaign> CampaignToIdBuildingNavigation { get; set; }
     }
