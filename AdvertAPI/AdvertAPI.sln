@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30114.105
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdvertAPI", "AdvertAPI.csproj", "{B538D4D2-C1BA-4A33-A173-058A10F6476E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XUnitTestProject1", "..\XUnitTestProject1\XUnitTestProject1.csproj", "{E4947692-833B-487E-A79B-AD9F1D3C3CDC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdvertApiTests", "..\XUnitTestProject1\AdvertApiTests.csproj", "{E4947692-833B-487E-A79B-AD9F1D3C3CDC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
